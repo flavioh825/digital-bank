@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: api
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bank_db
+    username: bank_db_user
+    password: password@123
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/db.changelog-master.xml
