@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
     Page<Transaction> findAllByAccountIdOrderByCreatedAtDesc(Long accountId, Pageable pageable);
+
+    boolean existsByCorrelationId(String correlationId);
 }

@@ -41,6 +41,7 @@ public class TransferServiceTest {
     void executeTransferSuccess() {
         var sourceId = 1L;
         var targetId = 2L;
+        var correlationId = "mykey";
 
         Account source = new Account(sourceId, "Ana", BigDecimal.valueOf(100), 0L);
         Account target = new Account(targetId, "Fernando", BigDecimal.valueOf(50), 0L);
@@ -49,7 +50,7 @@ public class TransferServiceTest {
         when(accountRepository.findById(sourceId)).thenReturn(Optional.of(source));
         when(accountRepository.findById(targetId)).thenReturn(Optional.of(target));
 
-        service.execute(sourceId, targetId, amount);
+        service.execute(sourceId, targetId, amount, correlationId);
 
         assertEquals(BigDecimal.valueOf(70), source.getBalance());
         assertEquals(BigDecimal.valueOf(80), target.getBalance());
@@ -68,6 +69,7 @@ public class TransferServiceTest {
     void shouldThrowExceptionWhenBalanceIsInsufficient() {
         var sourceId = 1L;
         var targetId = 2L;
+        var correlationId = "mykey";
 
         Account source = new Account(sourceId, "Ana", BigDecimal.valueOf(10), 0L);
         Account target = new Account(targetId, "Fernando", BigDecimal.valueOf(50), 0L);
@@ -76,7 +78,7 @@ public class TransferServiceTest {
         when(accountRepository.findById(targetId)).thenReturn(Optional.of(target));
 
         BusinessException ex = assertThrows(BusinessException.class, () ->
-                service.execute(sourceId, targetId, BigDecimal.valueOf(100)));
+                service.execute(sourceId, targetId, BigDecimal.valueOf(100), correlationId));
 
         Assertions.assertThat(ex.getMessage()).isEqualTo("Saldo insuficiente");
 
@@ -89,6 +91,7 @@ public class TransferServiceTest {
     void shouldThrowExceptionWhenTransferAmountIsNegative() {
         var sourceId = 1L;
         var targetId = 2L;
+        var correlationId = "mykey";
 
         Account source = new Account(sourceId, "Ana", BigDecimal.valueOf(100), 0L);
         Account target = new Account(targetId, "Fernando", BigDecimal.valueOf(500), 0L);
@@ -97,7 +100,7 @@ public class TransferServiceTest {
         when(accountRepository.findById(targetId)).thenReturn(Optional.of(target));
 
         BusinessException ex = assertThrows(BusinessException.class, () ->
-                service.execute(sourceId, targetId, BigDecimal.valueOf(-10)));
+                service.execute(sourceId, targetId, BigDecimal.valueOf(-10), correlationId));
 
         Assertions.assertThat(ex.getMessage())
                 .isEqualTo("Somente valores positivos são aceitos para esta ação");
@@ -110,11 +113,12 @@ public class TransferServiceTest {
     void shouldThrowExceptionWhenSourceAccountNotExists() {
         var sourceId = 1L;
         var targetId = 2L;
+        var correlationId = "mykey";
 
         when(accountRepository.findById(sourceId)).thenReturn(Optional.empty());
 
         BusinessException ex = assertThrows(BusinessException.class, () ->
-                service.execute(sourceId, targetId, BigDecimal.valueOf(10)));
+                service.execute(sourceId, targetId, BigDecimal.valueOf(10), correlationId));
 
         Assertions.assertThat(ex.getMessage())
                 .isEqualTo("Conta de origem não encontrada");
@@ -127,16 +131,35 @@ public class TransferServiceTest {
     void shouldThrowExceptionWhenTargetAccountNotExists() {
         var sourceId = 1L;
         var targetId = 2L;
+        var correlationId = "mykey";
 
         Account source = new Account(sourceId, "Ana", BigDecimal.valueOf(100), 0L);
         when(accountRepository.findById(sourceId)).thenReturn(Optional.of(source));
         when(accountRepository.findById(targetId)).thenReturn(Optional.empty());
 
         BusinessException ex = assertThrows(BusinessException.class, () ->
-                service.execute(sourceId, targetId, BigDecimal.valueOf(10)));
+                service.execute(sourceId, targetId, BigDecimal.valueOf(10), correlationId));
 
         Assertions.assertThat(ex.getMessage())
                 .isEqualTo("Conta de destino não encontrada");
+
+        verify(accountRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("Deve lançar exceção se operação já realizada")
+    void shouldThrowExceptionWhenTransactionAlreadyCarriedOut() {
+        var sourceId = 1L;
+        var targetId = 2L;
+        var correlationId = "mykey";
+
+        when(transactionRepository.existsByCorrelationId(correlationId)).thenReturn(true);
+
+        BusinessException ex = assertThrows(BusinessException.class, () ->
+                service.execute(sourceId, targetId, BigDecimal.valueOf(10), correlationId));
+
+        Assertions.assertThat(ex.getMessage())
+                .isEqualTo("Transferência já processada anteriormente");
 
         verify(accountRepository, never()).save(any());
     }

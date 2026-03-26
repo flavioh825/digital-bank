@@ -22,7 +22,10 @@ public class TransferService {
     private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
-    public void execute(Long from, Long to, BigDecimal amount) {
+    public void execute(Long from, Long to, BigDecimal amount, String correlationId) {
+        if (transactionRepository.existsByCorrelationId(correlationId))
+            throw new BusinessException("Transferência já processada anteriormente");
+
         Account source = repository.findById(from)
                 .orElseThrow(() -> new BusinessException("Conta de origem não encontrada"));
 
@@ -34,9 +37,9 @@ public class TransferService {
 
         // Registra movimentações na transaction
         transactionRepository.save(new Transaction(
-                null, source, amount.negate(), LocalDateTime.now(), "Transferência para " + target.getOwnerName()));
+                null, source, amount.negate(), LocalDateTime.now(), "Transferência para " + target.getOwnerName(), correlationId));
         transactionRepository.save(new Transaction(
-                null, target, amount, LocalDateTime.now(), "Transferência recebida de " + source.getOwnerName()));
+                null, target, amount, LocalDateTime.now(), "Transferência recebida de " + source.getOwnerName(), null));
 
         repository.save(source);
         repository.save(target);

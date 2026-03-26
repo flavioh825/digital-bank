@@ -20,7 +20,7 @@ public class TransferController {
     @PostMapping
     @Operation(summary = "Realiza transferências entre contas")
     public ResponseEntity<Void> transfer(@RequestBody @Valid TransferRequest request) {
-        service.execute(request.fromAccountId(), request.toAccountId(), request.amount());
+        service.execute(request.fromAccountId(), request.toAccountId(), request.amount(), request.correlationId());
         return ResponseEntity.ok().build();
     }
 }

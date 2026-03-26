@@ -29,4 +29,7 @@ public class Transaction {
 
     @Column(nullable = false)
     private String description;
+
+    @Column(name = "correlation_id", unique = true)
+    private String correlationId;
 }

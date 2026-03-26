@@ -6,6 +6,6 @@
 
     <include file="changesets/001-create-account-table.sql" relativeToChangelogFile="true"/>
     <include file="changesets/002-insert-initial-data-into-account-table.sql" relativeToChangelogFile="true"/>
-
     <include file="changesets/003-create-transaction-table.sql" relativeToChangelogFile="true" />
+    <include file="changesets/004-add-correlation-id-to-transaction.sql" relativeToChangelogFile="true" />
 </databaseChangeLog>

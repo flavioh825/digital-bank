@@ -1,6 +1,7 @@
 package com.bank.api.controller.request;
 
 
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
@@ -17,5 +18,8 @@ public record TransferRequest(
 
         @NotNull(message = "O valor da transferência é obrigatório")
         @Positive(message = "O valor deve ser maior que zero")
-        BigDecimal amount
+        BigDecimal amount,
+
+        @NotBlank(message = "correlationId is required")
+        String correlationId
 ) {}
