@@ -29,6 +29,7 @@ A arquitetura foi criada seguindo princípios de **Clean Architecture** e **DDD 
 * **Optimistic Locking:** Implementei o controle de versão (@Version) na entidade Account. Isso previne Lost Update em cenários de alta concorrência sem travar o banco de dados, o que aumentaria a latência.
 * **Atomicidade:** O @Transactional garante que débito, crédito e histórico sejam sempre gravados juntos.
 * **Idempotência:** Implementei uma chave unica na tabela transaction para evitar operações duplicadas.
+  * **Resiliencia:** Adicionei uma estratégia de retry para o envio de notificações, caso a API externa falhe.
 
 ### 3. Persistência
 * **Liquibase:** Utilizei o Liquibase para versionamento do banco de dados (PostgreSQL). Isso permite uma evolução controlada do banco e reproduzível em qualquer ambiente.
